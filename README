@@ -147,17 +147,34 @@ Internet (IP pública de la VPN)
 vpn-proxy/
 │
 ├── docker-compose.yml
+├── .env
 ├── .gitignore
 └── README
 ```
 
 ---
 
-# 🧾 1. Rellenar docker-compose.yml
+# 🧾 1. Crear el fichero .env
 
-El fichero `docker-compose.yml` debe completarse manualmente en tu entorno antes de levantar los contenedores.
+El fichero `.env` debe completarse manualmente en tu entorno antes de levantar los contenedores.
 
-Por seguridad, este fichero no se versiona en GitHub para evitar subir credenciales, claves o endpoints de tu VPN.
+Por seguridad, `.env` no se versiona en GitHub para evitar subir credenciales, claves o endpoints de tu VPN.
+
+`docker-compose.yml` sí se versiona, pero consume sus valores desde variables de entorno.
+
+```env
+WIREGUARD_ENDPOINT_IP=TU_IP_VPN
+WIREGUARD_ENDPOINT_PORT=TU_PUERTO
+WIREGUARD_PUBLIC_KEY=CLAVE_PUBLICA_SERVIDOR
+WIREGUARD_PRIVATE_KEY=CLAVE_PRIVADA_CLIENTE
+WIREGUARD_PRESHARED_KEY=CLAVE_PRESHARED
+WIREGUARD_ADDRESSES=IP_DEL_CLIENTE/32
+TZ=Europe/Madrid
+```
+
+---
+
+# 🧾 2. Revisar docker-compose.yml
 
 ```yaml id="xkkte5"
 services:
@@ -172,29 +189,29 @@ services:
       - VPN_SERVICE_PROVIDER=custom
       - VPN_TYPE=wireguard
 
-      # WireGuard config
-      - WIREGUARD_ENDPOINT_IP=TU_IP_VPN
-      - WIREGUARD_ENDPOINT_PORT=TU_PUERTO
-      - WIREGUARD_PUBLIC_KEY=CLAVE_PUBLICA_SERVIDOR
-      - WIREGUARD_PRIVATE_KEY=CLAVE_PRIVADA_CLIENTE
-      - WIREGUARD_PRESHARED_KEY=CLAVE_PRESHARED
-      - WIREGUARD_ADDRESSES=IP_DEL_CLIENTE/32
+      # WireGuard config desde .env
+      - WIREGUARD_ENDPOINT_IP=${WIREGUARD_ENDPOINT_IP}
+      - WIREGUARD_ENDPOINT_PORT=${WIREGUARD_ENDPOINT_PORT}
+      - WIREGUARD_PUBLIC_KEY=${WIREGUARD_PUBLIC_KEY}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_PRESHARED_KEY=${WIREGUARD_PRESHARED_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
 
       # Proxy HTTP
       - HTTPPROXY=on
       - HTTPPROXY_LOG=on
 
       # Opcional
-      - TZ=Europe/Madrid
+      - TZ=${TZ:-Europe/Madrid}
 
     restart: unless-stopped
 ```
 
-👉 Tras clonar el repositorio, abre `docker-compose.yml`, rellénalo con tus datos y luego ejecuta Docker.
+👉 Tras clonar el repositorio, crea `.env`, rellénalo con tus datos y luego ejecuta Docker.
 
 ---
 
-# 🔑 2. Obtener datos desde WireGuard (.conf)
+# 🔑 3. Obtener datos desde WireGuard (.conf)
 
 Ejemplo:
 
@@ -223,7 +240,7 @@ AllowedIPs = 0.0.0.0/0
 
 ---
 
-# 🚀 3. Levantar el servicio
+# 🚀 4. Levantar el servicio
 
 ```powershell id="vftkur"
 cd C:\ruta\al\proyecto
@@ -233,7 +250,7 @@ docker compose up -d
 
 ---
 
-# 📜 4. Ver logs
+# 📜 5. Ver logs
 
 ```powershell id="ti76mb"
 docker logs -f gluetun
@@ -241,7 +258,7 @@ docker logs -f gluetun
 
 ---
 
-# 🧪 5. Verificar conexión
+# 🧪 6. Verificar conexión
 
 ## Sin proxy:
 
@@ -259,7 +276,7 @@ curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
 
 ---
 
-# 🌐 6. Configurar navegador
+# 🌐 7. Configurar navegador
 
 ---
 
