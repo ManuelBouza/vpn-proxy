@@ -2,6 +2,8 @@
 
 Este proyecto permite que únicamente el tráfico de un navegador (o aplicaciones específicas) sea enroutado a través de una VPN WireGuard usando un proxy HTTP local, mientras que el resto del sistema mantiene su conectividad normal utilizando la IP local.
 
+La configuración está pensada para funcionar tanto en **Windows** como en **Linux**, siempre que Docker tenga soporte para contenedores Linux.
+
 ---
 
 # 🧩 Contexto y Motivación
@@ -134,8 +136,17 @@ Internet (IP pública de la VPN)
 
 # ⚙️ Requisitos
 
-* Windows 11
-* Docker Desktop (con WSL2 habilitado)
+## Windows
+
+* Windows 10/11
+* Docker Desktop con backend Linux habilitado (normalmente WSL2)
+* Configuración válida de WireGuard (`.conf`)
+* Puerto UDP del servidor accesible
+
+## Linux
+
+* Docker Engine + Docker Compose Plugin
+* Permisos para ejecutar Docker (`docker` o `sudo docker`)
 * Configuración válida de WireGuard (`.conf`)
 * Puerto UDP del servidor accesible
 
@@ -148,6 +159,7 @@ vpn-proxy/
 │
 ├── docker-compose.yml
 ├── .env
+├── .env.example
 ├── .gitignore
 └── README
 ```
@@ -163,6 +175,10 @@ Por seguridad, `.env` no se versiona en GitHub para evitar subir credenciales, c
 `docker-compose.yml` sí se versiona, pero consume sus valores desde variables de entorno.
 
 ```env
+GLUETUN_CONTAINER_NAME=gluetun
+HTTP_PROXY_BIND_IP=127.0.0.1
+HTTP_PROXY_BIND_PORT=8888
+
 WIREGUARD_ENDPOINT_IP=TU_IP_VPN
 WIREGUARD_ENDPOINT_PORT=TU_PUERTO
 WIREGUARD_PUBLIC_KEY=CLAVE_PUBLICA_SERVIDOR
@@ -172,6 +188,24 @@ WIREGUARD_ADDRESSES=IP_DEL_CLIENTE/32
 TZ=Europe/Madrid
 ```
 
+Puedes partir de la plantilla incluida:
+
+```text
+cp .env.example .env
+```
+
+En Windows PowerShell, si no tienes `cp` como alias disponible:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Variables nuevas relevantes para compatibilidad:
+
+* `HTTP_PROXY_BIND_IP`: por defecto `127.0.0.1`, válido en Windows y Linux
+* `HTTP_PROXY_BIND_PORT`: permite mover el proxy a otro puerto si `8888` está ocupado
+* `GLUETUN_CONTAINER_NAME`: evita fijar un nombre rígido si ejecutas varias instancias
+
 ---
 
 # 🧾 2. Revisar docker-compose.yml
@@ -180,11 +214,12 @@ TZ=Europe/Madrid
 services:
   gluetun:
     image: qmcgaw/gluetun:latest
-    container_name: gluetun
+    container_name: ${GLUETUN_CONTAINER_NAME:-gluetun}
     cap_add:
       - NET_ADMIN
+      - NET_RAW
     ports:
-      - "127.0.0.1:8888:8888"
+      - "${HTTP_PROXY_BIND_IP:-127.0.0.1}:${HTTP_PROXY_BIND_PORT:-8888}:8888/tcp"
     environment:
       - VPN_SERVICE_PROVIDER=custom
       - VPN_TYPE=wireguard
@@ -200,6 +235,7 @@ services:
       # Proxy HTTP
       - HTTPPROXY=on
       - HTTPPROXY_LOG=on
+      - HTTPPROXY_STEALTH=on
 
       # Opcional
       - TZ=${TZ:-Europe/Madrid}
@@ -242,9 +278,17 @@ AllowedIPs = 0.0.0.0/0
 
 # 🚀 4. Levantar el servicio
 
+## Windows (PowerShell)
+
 ```powershell id="vftkur"
 cd C:\ruta\al\proyecto
+docker compose up -d
+```
 
+## Linux (bash/zsh)
+
+```bash
+cd /ruta/al/proyecto
 docker compose up -d
 ```
 
@@ -252,7 +296,7 @@ docker compose up -d
 
 # 📜 5. Ver logs
 
-```powershell id="ti76mb"
+```bash id="ti76mb"
 docker logs -f gluetun
 ```
 
@@ -260,16 +304,32 @@ docker logs -f gluetun
 
 # 🧪 6. Verificar conexión
 
-## Sin proxy:
+## Windows
+
+Sin proxy:
 
 ```powershell id="y1sce5"
 curl.exe https://ifconfig.me
 ```
 
-## Con proxy:
+Con proxy:
 
 ```powershell id="meq1mq"
 curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
+```
+
+## Linux
+
+Sin proxy:
+
+```bash
+curl https://ifconfig.me
+```
+
+Con proxy:
+
+```bash
+curl -x http://127.0.0.1:8888 https://ifconfig.me
 ```
 
 👉 Debe devolver la IP de la VPN
@@ -412,7 +472,7 @@ Verificar:
 
 ---
 
-## ❌ WireGuard funciona en Windows pero no en Docker
+## ❌ WireGuard funciona en Windows o Linux pero no en Docker
 
 Causa común:
 
@@ -420,7 +480,7 @@ Causa común:
 
 Solución:
 
-* Desactivar WireGuard en Windows
+* Desactivar WireGuard en Windows o Linux
   **o**
 * Crear un segundo peer en el servidor
 
@@ -453,15 +513,16 @@ Verificar:
 
 Uso:
 
-```powershell id="wfztug"
-curl.exe -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
+```text id="wfztug"
+Windows: curl.exe -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
+Linux:   curl -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
 ```
 
 ---
 
 # 🛑 Detener servicio
 
-```powershell id="ne9fyf"
+```bash id="ne9fyf"
 docker compose down
 ```
 
@@ -469,7 +530,7 @@ docker compose down
 
 # 🔁 Reiniciar
 
-```powershell id="yxxcgl"
+```bash id="yxxcgl"
 docker restart gluetun
 ```
 
@@ -477,7 +538,7 @@ docker restart gluetun
 
 # 🧪 Debug útil
 
-```powershell id="q0chjl"
+```bash id="q0chjl"
 docker logs gluetun
 docker ps
 docker exec -it gluetun sh
@@ -499,6 +560,6 @@ docker exec -it gluetun sh
 * Navegador aislado usando proxy
 * Tráfico cifrado vía WireGuard
 * IP pública de la VPN
-* Sistema Windows sin afectar
+* Sistema Windows o Linux sin afectar
 
 

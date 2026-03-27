@@ -1,11 +1,12 @@
 services:
   gluetun:
     image: qmcgaw/gluetun:latest
-    container_name: gluetun
+    container_name: ${GLUETUN_CONTAINER_NAME:-gluetun}
     cap_add:
       - NET_ADMIN
+      - NET_RAW
     ports:
-      - "127.0.0.1:8888:8888/tcp"
+      - "${HTTP_PROXY_BIND_IP:-127.0.0.1}:${HTTP_PROXY_BIND_PORT:-8888}:8888/tcp"
     environment:
       - VPN_SERVICE_PROVIDER=custom
       - VPN_TYPE=wireguard
@@ -17,5 +18,6 @@ services:
       - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
       - HTTPPROXY=on
       - HTTPPROXY_LOG=on
+      - HTTPPROXY_STEALTH=on
       - TZ=${TZ:-Europe/Madrid}
     restart: unless-stopped
