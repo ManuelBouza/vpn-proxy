@@ -4,6 +4,105 @@ Este proyecto permite enrutar el tráfico de un navegador a través de una VPN W
 
 ---
 
+# 🧩 Contexto y Motivación
+
+Este proyecto surge de la necesidad de trabajar simultáneamente con servicios en diferentes contextos de red sin interferencias.
+
+En mi caso, trabajo con servicios ubicados en Estados Unidos (correo corporativo, portales internos, AWS, entre otros) que requieren acceso desde una IP específica mediante una VPN. Sin embargo, esto entra en conflicto con el uso normal del equipo, ya que al activar la VPN:
+
+* Todo el tráfico del sistema se enruta por la VPN
+* Se pierde acceso a recursos locales (red doméstica, servicios locales, etc.)
+* Se afectan otras actividades que requieren la IP real del host
+
+---
+
+## 💡 Enfoque inicial
+
+Inicialmente se consideró una solución basada en máquinas virtuales:
+
+* Crear una VM dedicada
+* Configurar la VPN dentro de la VM
+* Usar el navegador desde ese entorno aislado
+
+👉 Aunque funcional, esta solución presenta desventajas importantes:
+
+* Alto consumo de recursos (RAM, CPU, disco)
+* Mayor complejidad operativa
+* Menor integración con el entorno principal
+
+---
+
+## 🚀 Solución adoptada
+
+Dado que el uso principal de la VPN se limita a aplicaciones web (navegador), se optó por un enfoque más eficiente:
+
+👉 **Aislar únicamente el tráfico del navegador**, en lugar de todo el sistema.
+
+Esto se logra mediante:
+
+* Un proxy HTTP local
+* Una VPN WireGuard ejecutándose dentro de Docker
+* Un navegador configurado para usar dicho proxy
+
+---
+
+## 🧠 Evolución del diseño
+
+La idea inicial consistía en:
+
+* Un contenedor para el proxy
+* Otro contenedor para la VPN
+
+Sin embargo, se identificó que **Gluetun** permite integrar en un solo contenedor:
+
+* Cliente VPN (WireGuard/OpenVPN)
+* Proxy HTTP
+* Firewall (kill switch)
+* DNS seguro
+
+👉 Esto simplifica la arquitectura, reduce el consumo de recursos y mejora la seguridad.
+
+---
+
+## 🎯 Resultado
+
+Se obtiene una solución ligera, eficiente y flexible:
+
+* El navegador utiliza la VPN
+* El resto del sistema mantiene la IP local
+* No se requieren máquinas virtuales
+* Bajo consumo de recursos
+* Fácil despliegue y mantenimiento
+
+Además, permite escenarios avanzados como:
+
+* Ejecutar múltiples contenedores con distintas VPN
+* Asignar diferentes proxies a distintos navegadores
+* Usar el proxy desde aplicaciones (scripts, scraping, testing, etc.)
+
+---
+
+## 👥 ¿Para quién es este proyecto?
+
+Este enfoque es ideal para:
+
+* Desarrolladores que trabajan con entornos remotos (AWS, VPN corporativas, etc.)
+* Profesionales que necesitan acceder a recursos restringidos por IP
+* QA testers que validan comportamientos geolocalizados
+* Usuarios que requieren aislar tráfico de aplicaciones específicas
+* Cualquier persona que quiera evitar enrutar todo el sistema por una VPN
+
+---
+
+## 🧠 Idea clave
+
+👉 No todo el sistema necesita estar detrás de una VPN
+👉 Solo las aplicaciones que realmente lo requieren
+
+Este proyecto implementa ese principio de forma simple, reproducible y eficiente usando Docker.
+
+---
+
 # 🎯 Objetivo
 
 * Ejecutar una VPN WireGuard dentro de Docker
@@ -48,12 +147,17 @@ Internet (IP pública de la VPN)
 vpn-proxy/
 │
 ├── docker-compose.yml
-└── README.md
+├── .gitignore
+└── README
 ```
 
 ---
 
-# 🧾 1. Crear docker-compose.yml
+# 🧾 1. Rellenar docker-compose.yml
+
+El fichero `docker-compose.yml` debe completarse manualmente en tu entorno antes de levantar los contenedores.
+
+Por seguridad, este fichero no se versiona en GitHub para evitar subir credenciales, claves o endpoints de tu VPN.
 
 ```yaml id="xkkte5"
 services:
@@ -85,6 +189,8 @@ services:
 
     restart: unless-stopped
 ```
+
+👉 Tras clonar el repositorio, abre `docker-compose.yml`, rellénalo con tus datos y luego ejecuta Docker.
 
 ---
 
