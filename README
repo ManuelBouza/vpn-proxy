@@ -1,0 +1,381 @@
+# 🐳 VPN + Proxy con Docker (WireGuard + Gluetun)
+
+Este proyecto permite enrutar el tráfico de un navegador a través de una VPN WireGuard usando un proxy HTTP expuesto localmente.
+
+---
+
+# 🎯 Objetivo
+
+* Ejecutar una VPN WireGuard dentro de Docker
+* Exponer un proxy HTTP en `127.0.0.1:8888`
+* Configurar un navegador (ej. Firefox o Edge/Chrome con extensión) para usar ese proxy
+* Aislar el tráfico del navegador del resto del sistema
+
+---
+
+# 🧱 Arquitectura
+
+```id="rcjgdu"
+Navegador (Firefox / Edge / Chrome)
+        ↓
+Proxy HTTP (127.0.0.1:8888)
+        ↓
+Docker (port mapping / NAT)
+        ↓
+Contenedor Gluetun
+   ├── HTTP Proxy
+   ├── Firewall (kill switch)
+   ├── DNS (DoT)
+   └── WireGuard VPN (tun0)
+        ↓
+Internet (IP pública de la VPN)
+```
+
+---
+
+# ⚙️ Requisitos
+
+* Windows 11
+* Docker Desktop (con WSL2 habilitado)
+* Configuración válida de WireGuard (`.conf`)
+* Puerto UDP del servidor accesible
+
+---
+
+# 📁 Estructura del proyecto
+
+```id="2nsqxh"
+vpn-proxy/
+│
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+# 🧾 1. Crear docker-compose.yml
+
+```yaml id="xkkte5"
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "127.0.0.1:8888:8888"
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+
+      # WireGuard config
+      - WIREGUARD_ENDPOINT_IP=TU_IP_VPN
+      - WIREGUARD_ENDPOINT_PORT=TU_PUERTO
+      - WIREGUARD_PUBLIC_KEY=CLAVE_PUBLICA_SERVIDOR
+      - WIREGUARD_PRIVATE_KEY=CLAVE_PRIVADA_CLIENTE
+      - WIREGUARD_PRESHARED_KEY=CLAVE_PRESHARED
+      - WIREGUARD_ADDRESSES=IP_DEL_CLIENTE/32
+
+      # Proxy HTTP
+      - HTTPPROXY=on
+      - HTTPPROXY_LOG=on
+
+      # Opcional
+      - TZ=Europe/Madrid
+
+    restart: unless-stopped
+```
+
+---
+
+# 🔑 2. Obtener datos desde WireGuard (.conf)
+
+Ejemplo:
+
+```ini
+[Interface]
+PrivateKey = CLIENT_PRIVATE_KEY
+Address = IP_DEL_CLIENTE/32
+
+[Peer]
+PublicKey = SERVER_PUBLIC_KEY
+PresharedKey = PSK
+Endpoint = IP:PORT
+AllowedIPs = 0.0.0.0/0
+```
+
+### Traducción a Docker:
+
+| WireGuard     | Docker                  |
+| ------------- | ----------------------- |
+| PrivateKey    | WIREGUARD_PRIVATE_KEY   |
+| PublicKey     | WIREGUARD_PUBLIC_KEY    |
+| PresharedKey  | WIREGUARD_PRESHARED_KEY |
+| Address       | WIREGUARD_ADDRESSES     |
+| Endpoint IP   | WIREGUARD_ENDPOINT_IP   |
+| Endpoint Port | WIREGUARD_ENDPOINT_PORT |
+
+---
+
+# 🚀 3. Levantar el servicio
+
+```powershell id="vftkur"
+cd C:\ruta\al\proyecto
+
+docker compose up -d
+```
+
+---
+
+# 📜 4. Ver logs
+
+```powershell id="ti76mb"
+docker logs -f gluetun
+```
+
+---
+
+# 🧪 5. Verificar conexión
+
+## Sin proxy:
+
+```powershell id="y1sce5"
+curl.exe https://ifconfig.me
+```
+
+## Con proxy:
+
+```powershell id="meq1mq"
+curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
+```
+
+👉 Debe devolver la IP de la VPN
+
+---
+
+# 🌐 6. Configurar navegador
+
+---
+
+## 🥇 Opción A (Recomendada): Firefox
+
+👉 Permite proxy independiente sin extensiones
+
+1. Abrir:
+
+```id="8gshmq"
+about:preferences
+```
+
+2. Ir a:
+
+```id="118qkr"
+Configuración de red → Configuración
+```
+
+3. Seleccionar:
+
+```id="e8qanq"
+Configuración manual del proxy
+```
+
+4. Configurar:
+
+```id="s9rvad"
+HTTP Proxy: 127.0.0.1
+Puerto:     8888
+```
+
+✔ Activar:
+
+```id="l5f910"
+Usar este proxy para todos los protocolos
+```
+
+---
+
+## 🥈 Opción B (Alternativa PRO): FoxyProxy (Edge / Chrome / Brave)
+
+👉 Ideal si ya usas Edge/Chrome y no quieres cambiar de navegador
+
+### 🔧 Instalación
+
+1. Ir a la tienda de extensiones del navegador
+2. Buscar: **FoxyProxy Standard**
+3. Instalar la extensión
+
+---
+
+### ⚙️ Configuración
+
+1. Abrir FoxyProxy
+2. Añadir nuevo proxy:
+
+```text id="tf6drn"
+Type: HTTP
+IP Address: 127.0.0.1
+Port: 8888
+```
+
+3. Guardar
+
+---
+
+### ▶️ Activar proxy
+
+👉 Desde el icono de FoxyProxy:
+
+Seleccionar:
+
+```text id="m2q7c2"
+Use proxy "127.0.0.1:8888"
+```
+
+---
+
+### 🧪 Verificación
+
+Abrir:
+
+```text id="e0mh9p"
+https://ifconfig.me
+```
+
+👉 Debe mostrar la IP de la VPN
+
+---
+
+### 💡 Ventajas de FoxyProxy
+
+* No afecta al sistema operativo
+* Permite múltiples perfiles de proxy
+* Soporta reglas por dominio (modo avanzado)
+* Ideal para entornos de desarrollo, scraping o testing
+
+---
+
+# ⚠️ Problemas comunes
+
+## ❌ Proxy devuelve 503
+
+Causa:
+
+* VPN no conectada o en proceso de reconexión
+
+Solución:
+
+```powershell id="24hvx4"
+docker logs gluetun
+```
+
+---
+
+## ❌ DNS timeout
+
+Causa:
+
+* La VPN no está enroutando tráfico correctamente
+
+---
+
+## ❌ No hay conexión VPN
+
+Verificar:
+
+* Endpoint correcto
+* Puerto correcto
+* Claves correctas
+* PresharedKey incluida
+
+---
+
+## ❌ WireGuard funciona en Windows pero no en Docker
+
+Causa común:
+
+👉 Estás usando el mismo peer en dos dispositivos
+
+Solución:
+
+* Desactivar WireGuard en Windows
+  **o**
+* Crear un segundo peer en el servidor
+
+---
+
+## ❌ Navegador no usa el proxy
+
+Verificar:
+
+* Proxy activado en Firefox
+  **o**
+* Perfil activo en FoxyProxy
+
+---
+
+# 🧠 Reglas importantes
+
+* 1 peer = 1 conexión activa
+* WireGuard no muestra errores claros
+* “Connected” ≠ “Funciona”
+
+---
+
+# 🔐 Opcional: proteger proxy con usuario
+
+```yaml id="vppgtt"
+- HTTPPROXY_USER=usuario
+- HTTPPROXY_PASSWORD=password
+```
+
+Uso:
+
+```powershell id="wfztug"
+curl.exe -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
+```
+
+---
+
+# 🛑 Detener servicio
+
+```powershell id="ne9fyf"
+docker compose down
+```
+
+---
+
+# 🔁 Reiniciar
+
+```powershell id="yxxcgl"
+docker restart gluetun
+```
+
+---
+
+# 🧪 Debug útil
+
+```powershell id="q0chjl"
+docker logs gluetun
+docker ps
+docker exec -it gluetun sh
+```
+
+---
+
+# 🚀 Mejoras futuras
+
+* SOCKS5 proxy (más eficiente)
+* Rotación automática de VPN
+* Proxy por dominio
+* Integración con scripts Python / scraping
+
+---
+
+# ✅ Resultado final
+
+* Navegador aislado usando proxy
+* Tráfico cifrado vía WireGuard
+* IP pública de la VPN
+* Sistema Windows sin afectar
+
+

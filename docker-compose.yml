@@ -1,0 +1,21 @@
+services:
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - "127.0.0.1:8888:8888/tcp"
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+      - WIREGUARD_ENDPOINT_IP=3.129.76.220
+      - WIREGUARD_ENDPOINT_PORT=50117
+      - WIREGUARD_PUBLIC_KEY=8e/T7vB7rHkfLYzUGDYI4GDcsl27Ift6F3f4MHOszmI=
+      - WIREGUARD_PRIVATE_KEY=OKAd8TKtPBQX1CAI1IbqY0js7HW8mIk2GjwwYtRU038=
+      - WIREGUARD_PRESHARED_KEY=l6GpPCYHzZvkO6LE0iZkQcxCWU1ASA65010+8iOEYqE=
+      - WIREGUARD_ADDRESSES=10.50.0.119/32
+      - HTTPPROXY=on
+      - HTTPPROXY_LOG=on
+      - TZ=Europe/Madrid
+    restart: unless-stopped
