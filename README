@@ -1,6 +1,6 @@
 # 🐳 VPN + Proxy con Docker (WireGuard + Gluetun)
 
-Este proyecto permite enrutar el tráfico de un navegador a través de una VPN WireGuard usando un proxy HTTP expuesto localmente.
+Este proyecto permite que únicamente el tráfico de un navegador (o aplicaciones específicas) sea enroutado a través de una VPN WireGuard usando un proxy HTTP local, mientras que el resto del sistema mantiene su conectividad normal utilizando la IP local.
 
 ---
 
