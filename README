@@ -136,14 +136,16 @@ Internet (IP pública de la VPN)
 
 # ⚙️ Requisitos
 
-## Windows
+## 🪟 Windows
 
 * Windows 10/11
 * Docker Desktop con backend Linux habilitado (normalmente WSL2)
 * Configuración válida de WireGuard (`.conf`)
 * Puerto UDP del servidor accesible
 
-## Linux
+---
+
+## 🐧 Linux
 
 * Docker Engine + Docker Compose Plugin
 * Permisos para ejecutar Docker (`docker` o `sudo docker`)
@@ -278,16 +280,18 @@ AllowedIPs = 0.0.0.0/0
 
 # 🚀 4. Levantar el servicio
 
-## Windows (PowerShell)
+## 🪟 Windows
 
-```powershell id="vftkur"
+```powershell id="run_win"
 cd C:\ruta\al\proyecto
 docker compose up -d
 ```
 
-## Linux (bash/zsh)
+---
 
-```bash
+## 🐧 Linux
+
+```bash id="run_linux"
 cd /ruta/al/proyecto
 docker compose up -d
 ```
@@ -296,7 +300,17 @@ docker compose up -d
 
 # 📜 5. Ver logs
 
-```bash id="ti76mb"
+## 🪟 Windows
+
+```powershell id="logs_win"
+docker logs -f gluetun
+```
+
+---
+
+## 🐧 Linux
+
+```bash id="logs_linux"
 docker logs -f gluetun
 ```
 
@@ -304,31 +318,33 @@ docker logs -f gluetun
 
 # 🧪 6. Verificar conexión
 
-## Windows
+## 🪟 Windows
 
 Sin proxy:
 
-```powershell id="y1sce5"
+```powershell id="test_win_1"
 curl.exe https://ifconfig.me
 ```
 
 Con proxy:
 
-```powershell id="meq1mq"
+```powershell id="test_win_2"
 curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
 ```
 
-## Linux
+---
+
+## 🐧 Linux
 
 Sin proxy:
 
-```bash
+```bash id="test_linux_1"
 curl https://ifconfig.me
 ```
 
 Con proxy:
 
-```bash
+```bash id="test_linux_2"
 curl -x http://127.0.0.1:8888 https://ifconfig.me
 ```
 
@@ -522,7 +538,17 @@ Linux:   curl -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
 
 # 🛑 Detener servicio
 
-```bash id="ne9fyf"
+## 🪟 Windows
+
+```powershell id="stop_win"
+docker compose down
+```
+
+---
+
+## 🐧 Linux
+
+```bash id="stop_linux"
 docker compose down
 ```
 
@@ -530,7 +556,17 @@ docker compose down
 
 # 🔁 Reiniciar
 
-```bash id="yxxcgl"
+## 🪟 Windows
+
+```powershell id="restart_win"
+docker restart gluetun
+```
+
+---
+
+## 🐧 Linux
+
+```bash id="restart_linux"
 docker restart gluetun
 ```
 
@@ -538,7 +574,19 @@ docker restart gluetun
 
 # 🧪 Debug útil
 
-```bash id="q0chjl"
+## 🪟 Windows
+
+```powershell id="debug_win"
+docker logs gluetun
+docker ps
+docker exec -it gluetun sh
+```
+
+---
+
+## 🐧 Linux
+
+```bash id="debug_linux"
 docker logs gluetun
 docker ps
 docker exec -it gluetun sh
@@ -562,4 +610,4 @@ docker exec -it gluetun sh
 * IP pública de la VPN
 * Sistema Windows o Linux sin afectar
 
-
+---
