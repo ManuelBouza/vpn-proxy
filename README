@@ -176,7 +176,35 @@ Por seguridad, `.env` no se versiona en GitHub para evitar subir credenciales, c
 
 `docker-compose.yml` sí se versiona, pero consume sus valores desde variables de entorno.
 
-```env
+---
+
+## 🪟 Windows
+
+### Crear archivo desde plantilla
+
+```powershell id="env_win_copy"
+Copy-Item .env.example .env
+```
+
+> Nota: en PowerShell moderno `cp` suele ser alias de `Copy-Item`, pero se usa el comando explícito por compatibilidad.
+
+---
+
+## 🐧 Linux
+
+### Crear archivo desde plantilla
+
+```bash id="env_linux_copy"
+cp .env.example .env
+```
+
+---
+
+## ✏️ Configuración del archivo
+
+Editar el archivo `.env` con tus valores:
+
+```env id="env_vars"
 GLUETUN_CONTAINER_NAME=gluetun
 HTTP_PROXY_BIND_IP=127.0.0.1
 HTTP_PROXY_BIND_PORT=8888
@@ -190,23 +218,21 @@ WIREGUARD_ADDRESSES=IP_DEL_CLIENTE/32
 TZ=Europe/Madrid
 ```
 
-Puedes partir de la plantilla incluida:
+---
 
-```text
-cp .env.example .env
-```
-
-En Windows PowerShell, si no tienes `cp` como alias disponible:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Variables nuevas relevantes para compatibilidad:
+## 🧠 Variables relevantes
 
 * `HTTP_PROXY_BIND_IP`: por defecto `127.0.0.1`, válido en Windows y Linux
 * `HTTP_PROXY_BIND_PORT`: permite mover el proxy a otro puerto si `8888` está ocupado
-* `GLUETUN_CONTAINER_NAME`: evita fijar un nombre rígido si ejecutas varias instancias
+* `GLUETUN_CONTAINER_NAME`: útil si ejecutas múltiples instancias
+
+---
+
+## ⚠️ Importante
+
+* Nunca subas `.env` a GitHub
+* Añádelo a `.gitignore`
+* Trata este archivo como **secreto** (contiene claves privadas)
 
 ---
 
