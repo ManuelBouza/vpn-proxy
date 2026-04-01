@@ -1,4 +1,4 @@
-# 🐳 VPN + Proxy con Docker (WireGuard + Gluetun)
+# VPN + Proxy con Docker (WireGuard + Gluetun)
 
 Este proyecto permite que únicamente el tráfico de un navegador (o aplicaciones específicas) sea enroutado a través de una VPN WireGuard usando un proxy HTTP local, mientras que el resto del sistema mantiene su conectividad normal utilizando la IP local.
 
@@ -6,102 +6,45 @@ La configuración está pensada para funcionar tanto en **Windows** como en **Li
 
 ---
 
-# 🧩 Contexto y Motivación
+# 🧩 Contexto y alcance del repositorio
 
-Este proyecto surge de la necesidad de trabajar simultáneamente con servicios en diferentes contextos de red sin interferencias.
+Este repositorio contiene la **implementación práctica** de la solución descrita en el artículo.
 
-En mi caso, trabajo con servicios ubicados en Estados Unidos (correo corporativo, portales internos, AWS, entre otros) que requieren acceso desde una IP específica mediante una VPN. Sin embargo, esto entra en conflicto con el uso normal del equipo, ya que al activar la VPN:
+Aquí encontrarás todo lo necesario para:
 
-* Todo el tráfico del sistema se enruta por la VPN
-* Se pierde acceso a recursos locales (red doméstica, servicios locales, etc.)
-* Se afectan otras actividades que requieren la IP real del host
+* Configurar la conexión VPN mediante Docker
+* Exponer un proxy HTTP local
+* Aislar el tráfico del navegador
+* Ejecutar la solución en **Windows o Linux**
+* Validar y depurar el funcionamiento
 
----
+👉 La explicación completa del problema, motivación y decisiones técnicas está documentada en el artículo de [Medium](https://medium.com/@manuel.bouza07/3a0642b7bdc5) enlazado en el repositorio.
 
-## 💡 Enfoque inicial
-
-Inicialmente se consideró una solución basada en máquinas virtuales:
-
-* Crear una VM dedicada
-* Configurar la VPN dentro de la VM
-* Usar el navegador desde ese entorno aislado
-
-👉 Aunque funcional, esta solución presenta desventajas importantes:
-
-* Alto consumo de recursos (RAM, CPU, disco)
-* Mayor complejidad operativa
-* Menor integración con el entorno principal
 
 ---
 
-## 🚀 Solución adoptada
+## ⚡ Uso rápido (TL;DR)
 
-Dado que el uso principal de la VPN se limita a aplicaciones web (navegador), se optó por un enfoque más eficiente:
+```bash
+git clone https://github.com/ManuelBouza/vpn-proxy
+cd vpn-proxy
 
-👉 **Aislar únicamente el tráfico del navegador**, en lugar de todo el sistema.
+# Windows (PowerShell)
+Copy-Item .env.example .env
 
-Esto se logra mediante:
+# Linux
+cp .env.example .env
 
-* Un proxy HTTP local
-* Una VPN WireGuard ejecutándose dentro de Docker
-* Un navegador configurado para usar dicho proxy
+# editar .env
 
----
+docker compose up -d
+```
 
-## 🧠 Evolución del diseño
+Proxy disponible en:
 
-La idea inicial consistía en:
-
-* Un contenedor para el proxy
-* Otro contenedor para la VPN
-
-Sin embargo, se identificó que **Gluetun** permite integrar en un solo contenedor:
-
-* Cliente VPN (WireGuard/OpenVPN)
-* Proxy HTTP
-* Firewall (kill switch)
-* DNS seguro
-
-👉 Esto simplifica la arquitectura, reduce el consumo de recursos y mejora la seguridad.
-
----
-
-## 🎯 Resultado
-
-Se obtiene una solución ligera, eficiente y flexible:
-
-* El navegador utiliza la VPN
-* El resto del sistema mantiene la IP local
-* No se requieren máquinas virtuales
-* Bajo consumo de recursos
-* Fácil despliegue y mantenimiento
-
-Además, permite escenarios avanzados como:
-
-* Ejecutar múltiples contenedores con distintas VPN
-* Asignar diferentes proxies a distintos navegadores
-* Usar el proxy desde aplicaciones (scripts, scraping, testing, etc.)
-
----
-
-## 👥 ¿Para quién es este proyecto?
-
-Este enfoque es ideal para:
-
-* Desarrolladores que trabajan con entornos remotos (AWS, VPN corporativas, etc.)
-* Profesionales que necesitan acceder a recursos restringidos por IP
-* QA testers que validan comportamientos geolocalizados
-* Usuarios que requieren aislar tráfico de aplicaciones específicas
-* Cualquier persona que quiera evitar enrutar todo el sistema por una VPN
-
----
-
-## 🧠 Idea clave
-
-👉 No todo el sistema necesita estar detrás de una VPN
-👉 Solo las aplicaciones que realmente lo requieren
-
-Este proyecto implementa ese principio de forma simple, reproducible y eficiente usando Docker.
+```
+http://127.0.0.1:8888
+```
 
 ---
 
@@ -163,7 +106,7 @@ vpn-proxy/
 ├── .env
 ├── .env.example
 ├── .gitignore
-└── README
+└── README.md
 ```
 
 ---
@@ -172,9 +115,10 @@ vpn-proxy/
 
 El fichero `.env` debe completarse manualmente en tu entorno antes de levantar los contenedores.
 
-Por seguridad, `.env` no se versiona en GitHub para evitar subir credenciales, claves o endpoints de tu VPN.
+Por seguridad:
 
-`docker-compose.yml` sí se versiona, pero consume sus valores desde variables de entorno.
+* `.env` **NO se versiona**
+* Contiene credenciales sensibles
 
 ---
 
@@ -220,19 +164,12 @@ TZ=Europe/Madrid
 
 ---
 
-## 🧠 Variables relevantes
-
-* `HTTP_PROXY_BIND_IP`: por defecto `127.0.0.1`, válido en Windows y Linux
-* `HTTP_PROXY_BIND_PORT`: permite mover el proxy a otro puerto si `8888` está ocupado
-* `GLUETUN_CONTAINER_NAME`: útil si ejecutas múltiples instancias
-
----
-
 ## ⚠️ Importante
 
 * Nunca subas `.env` a GitHub
 * Añádelo a `.gitignore`
 * Trata este archivo como **secreto** (contiene claves privadas)
+* Validar que los datos de WireGuard sean correctos
 
 ---
 
@@ -378,91 +315,39 @@ curl -x http://127.0.0.1:8888 https://ifconfig.me
 
 ---
 
-# 🌐 7. Configurar navegador
+# 🌐 7. Navegador
+
+## 🥇 Firefox (recomendado)
+
+Permite configurar proxy de forma independiente sin afectar el sistema.
+
+Configuración:
+
+* Proxy HTTP: `127.0.0.1`
+* Puerto: `8888`
+* Activar: usar para todos los protocolos
 
 ---
 
-## 🥇 Opción A (Recomendada): Firefox
+## 🥈 Chrome / Edge / Brave
 
-👉 Permite proxy independiente sin extensiones
+Usar extensión: **FoxyProxy Standard**
 
-1. Abrir:
+Configuración recomendada:
 
-```id="8gshmq"
-about:preferences
-```
+* Tipo: HTTP
+* Host: `127.0.0.1`
+* Puerto: `8888`
 
-2. Ir a:
-
-```id="118qkr"
-Configuración de red → Configuración
-```
-
-3. Seleccionar:
-
-```id="e8qanq"
-Configuración manual del proxy
-```
-
-4. Configurar:
-
-```id="s9rvad"
-HTTP Proxy: 127.0.0.1
-Puerto:     8888
-```
-
-✔ Activar:
-
-```id="l5f910"
-Usar este proxy para todos los protocolos
-```
+👉 Activar manualmente el perfil desde la extensión.
 
 ---
 
-## 🥈 Opción B (Alternativa PRO): FoxyProxy (Edge / Chrome / Brave)
-
-👉 Ideal si ya usas Edge/Chrome y no quieres cambiar de navegador
-
-### 🔧 Instalación
-
-1. Ir a la tienda de extensiones del navegador
-2. Buscar: **FoxyProxy Standard**
-3. Instalar la extensión
-
----
-
-### ⚙️ Configuración
-
-1. Abrir FoxyProxy
-2. Añadir nuevo proxy:
-
-```text id="tf6drn"
-Type: HTTP
-IP Address: 127.0.0.1
-Port: 8888
-```
-
-3. Guardar
-
----
-
-### ▶️ Activar proxy
-
-👉 Desde el icono de FoxyProxy:
-
-Seleccionar:
-
-```text id="m2q7c2"
-Use proxy "127.0.0.1:8888"
-```
-
----
-
-### 🧪 Verificación
+## 🧪 Verificación
 
 Abrir:
 
-```text id="e0mh9p"
+```
 https://ifconfig.me
 ```
 
@@ -470,12 +355,18 @@ https://ifconfig.me
 
 ---
 
-### 💡 Ventajas de FoxyProxy
+## 💡 Nota importante
 
-* No afecta al sistema operativo
-* Permite múltiples perfiles de proxy
-* Soporta reglas por dominio (modo avanzado)
-* Ideal para entornos de desarrollo, scraping o testing
+Los navegadores basados en Chromium (Chrome, Edge, Brave):
+
+* Usan el proxy del sistema por defecto
+* No permiten aislamiento sin extensiones
+
+👉 Por eso se recomienda:
+
+* Firefox (nativo)
+  **o**
+* FoxyProxy (alternativa en Chromium)
 
 ---
 
@@ -486,6 +377,8 @@ https://ifconfig.me
 Causa:
 
 * VPN no conectada o en proceso de reconexión
+
+👉 El proxy depende completamente del túnel VPN.
 
 Solución:
 
@@ -500,6 +393,7 @@ docker logs gluetun
 Causa:
 
 * La VPN no está enroutando tráfico correctamente
+* El túnel WireGuard no está funcionando aunque no haya error explícito
 
 ---
 
@@ -507,10 +401,10 @@ Causa:
 
 Verificar:
 
-* Endpoint correcto
-* Puerto correcto
+* Endpoint accesible (IP/puerto)
 * Claves correctas
-* PresharedKey incluida
+* PresharedKey (si aplica)
+* Que el servidor permita tu peer
 
 ---
 
@@ -518,13 +412,13 @@ Verificar:
 
 Causa común:
 
-👉 Estás usando el mismo peer en dos dispositivos
+👉 WireGuard **no permite múltiples conexiones simultáneas con el mismo peer**
 
 Solución:
 
-* Desactivar WireGuard en Windows o Linux
+* Desactivar el cliente WireGuard en el host
   **o**
-* Crear un segundo peer en el servidor
+* Crear un peer adicional en el servidor
 
 ---
 
@@ -532,23 +426,25 @@ Solución:
 
 Verificar:
 
-* Proxy activado en Firefox
-  **o**
-* Perfil activo en FoxyProxy
+* Firefox → configuración manual activa
+* FoxyProxy → perfil seleccionado
+
+👉 Si no está activo, el tráfico saldrá por la IP local.
 
 ---
 
 # 🧠 Reglas importantes
 
 * 1 peer = 1 conexión activa
-* WireGuard no muestra errores claros
-* “Connected” ≠ “Funciona”
+* WireGuard es “silencioso” (puede fallar sin errores claros)
+* “Connected” ≠ tráfico funcionando
+* Si la VPN cae → el proxy deja de funcionar (comportamiento esperado)
 
 ---
 
 # 🔐 Opcional: proteger proxy con usuario
 
-```yaml id="vppgtt"
+```yaml
 - HTTPPROXY_USER=usuario
 - HTTPPROXY_PASSWORD=password
 ```
@@ -617,23 +513,4 @@ docker logs gluetun
 docker ps
 docker exec -it gluetun sh
 ```
-
----
-
-# 🚀 Mejoras futuras
-
-* SOCKS5 proxy (más eficiente)
-* Rotación automática de VPN
-* Proxy por dominio
-* Integración con scripts Python / scraping
-
----
-
-# ✅ Resultado final
-
-* Navegador aislado usando proxy
-* Tráfico cifrado vía WireGuard
-* IP pública de la VPN
-* Sistema Windows o Linux sin afectar
-
 ---
