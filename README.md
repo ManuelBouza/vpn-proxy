@@ -20,32 +20,6 @@ Aquí encontrarás todo lo necesario para:
 
 👉 La explicación completa del problema, motivación y decisiones técnicas está documentada en el artículo de [Medium](https://medium.com/@manuel.bouza07/3a0642b7bdc5) enlazado en el repositorio.
 
-
----
-
-## ⚡ Uso rápido (TL;DR)
-
-```bash
-git clone https://github.com/ManuelBouza/vpn-proxy
-cd vpn-proxy
-
-# Windows (PowerShell)
-Copy-Item .env.example .env
-
-# Linux
-cp .env.example .env
-
-# editar .env
-
-docker compose up -d
-```
-
-Proxy disponible en:
-
-```
-http://127.0.0.1:8888
-```
-
 ---
 
 # 🎯 Objetivo
@@ -59,7 +33,7 @@ http://127.0.0.1:8888
 
 # 🧱 Arquitectura
 
-```id="rcjgdu"
+```text
 Navegador (Firefox / Edge / Chrome)
         ↓
 Proxy HTTP (127.0.0.1:8888)
@@ -99,7 +73,7 @@ Internet (IP pública de la VPN)
 
 # 📁 Estructura del proyecto
 
-```id="2nsqxh"
+```text
 vpn-proxy/
 │
 ├── docker-compose.yml
@@ -111,7 +85,31 @@ vpn-proxy/
 
 ---
 
-# 🧾 1. Crear el fichero .env
+# 📥 1. Descargar el repositorio
+
+Ubícate en el directorio donde deseas clonar el proyecto.
+
+## 🪟 Windows
+
+```powershell
+cd C:\ruta\donde\guardar\el\proyecto
+git clone https://github.com/ManuelBouza/vpn-proxy
+cd vpn-proxy
+```
+
+---
+
+## 🐧 Linux
+
+```bash
+cd /ruta/donde/guardar/el/proyecto
+git clone https://github.com/ManuelBouza/vpn-proxy
+cd vpn-proxy
+```
+
+---
+
+# 🧾 2. Crear el fichero .env
 
 El fichero `.env` debe completarse manualmente en tu entorno antes de levantar los contenedores.
 
@@ -126,7 +124,7 @@ Por seguridad:
 
 ### Crear archivo desde plantilla
 
-```powershell id="env_win_copy"
+```powershell
 Copy-Item .env.example .env
 ```
 
@@ -138,7 +136,7 @@ Copy-Item .env.example .env
 
 ### Crear archivo desde plantilla
 
-```bash id="env_linux_copy"
+```bash
 cp .env.example .env
 ```
 
@@ -148,7 +146,7 @@ cp .env.example .env
 
 Editar el archivo `.env` con tus valores:
 
-```env id="env_vars"
+```env
 GLUETUN_CONTAINER_NAME=gluetun
 HTTP_PROXY_BIND_IP=127.0.0.1
 HTTP_PROXY_BIND_PORT=8888
@@ -173,9 +171,9 @@ TZ=Europe/Madrid
 
 ---
 
-# 🧾 2. Revisar docker-compose.yml
+# 🧾 3. Revisar docker-compose.yml
 
-```yaml id="xkkte5"
+```yaml
 services:
   gluetun:
     image: qmcgaw/gluetun:latest
@@ -212,7 +210,7 @@ services:
 
 ---
 
-# 🔑 3. Obtener datos desde WireGuard (.conf)
+# 🔑 4. Obtener datos desde WireGuard (.conf)
 
 Ejemplo:
 
@@ -241,12 +239,11 @@ AllowedIPs = 0.0.0.0/0
 
 ---
 
-# 🚀 4. Levantar el servicio
+# 🚀 5. Levantar el servicio
 
 ## 🪟 Windows
 
-```powershell id="run_win"
-cd C:\ruta\al\proyecto
+```powershell
 docker compose up -d
 ```
 
@@ -254,18 +251,17 @@ docker compose up -d
 
 ## 🐧 Linux
 
-```bash id="run_linux"
-cd /ruta/al/proyecto
+```bash
 docker compose up -d
 ```
 
 ---
 
-# 📜 5. Ver logs
+# 📜 6. Ver logs
 
 ## 🪟 Windows
 
-```powershell id="logs_win"
+```powershell
 docker logs -f gluetun
 ```
 
@@ -273,25 +269,25 @@ docker logs -f gluetun
 
 ## 🐧 Linux
 
-```bash id="logs_linux"
+```bash
 docker logs -f gluetun
 ```
 
 ---
 
-# 🧪 6. Verificar conexión
+# 🧪 7. Verificar conexión
 
 ## 🪟 Windows
 
 Sin proxy:
 
-```powershell id="test_win_1"
+```powershell
 curl.exe https://ifconfig.me
 ```
 
 Con proxy:
 
-```powershell id="test_win_2"
+```powershell
 curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
 ```
 
@@ -301,13 +297,13 @@ curl.exe -x http://127.0.0.1:8888 https://ifconfig.me
 
 Sin proxy:
 
-```bash id="test_linux_1"
+```bash
 curl https://ifconfig.me
 ```
 
 Con proxy:
 
-```bash id="test_linux_2"
+```bash
 curl -x http://127.0.0.1:8888 https://ifconfig.me
 ```
 
@@ -315,7 +311,7 @@ curl -x http://127.0.0.1:8888 https://ifconfig.me
 
 ---
 
-# 🌐 7. Navegador
+# 🌐 8. Navegador
 
 ## 🥇 Firefox (recomendado)
 
@@ -347,7 +343,7 @@ Configuración recomendada:
 
 Abrir:
 
-```
+```text
 https://ifconfig.me
 ```
 
@@ -382,7 +378,7 @@ Causa:
 
 Solución:
 
-```powershell id="24hvx4"
+```powershell
 docker logs gluetun
 ```
 
@@ -451,7 +447,7 @@ Verificar:
 
 Uso:
 
-```text id="wfztug"
+```text
 Windows: curl.exe -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
 Linux:   curl -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
 ```
@@ -462,7 +458,7 @@ Linux:   curl -x http://usuario:password@127.0.0.1:8888 https://ifconfig.me
 
 ## 🪟 Windows
 
-```powershell id="stop_win"
+```powershell
 docker compose down
 ```
 
@@ -470,7 +466,7 @@ docker compose down
 
 ## 🐧 Linux
 
-```bash id="stop_linux"
+```bash
 docker compose down
 ```
 
@@ -480,7 +476,7 @@ docker compose down
 
 ## 🪟 Windows
 
-```powershell id="restart_win"
+```powershell
 docker restart gluetun
 ```
 
@@ -488,7 +484,7 @@ docker restart gluetun
 
 ## 🐧 Linux
 
-```bash id="restart_linux"
+```bash
 docker restart gluetun
 ```
 
@@ -498,7 +494,7 @@ docker restart gluetun
 
 ## 🪟 Windows
 
-```powershell id="debug_win"
+```powershell
 docker logs gluetun
 docker ps
 docker exec -it gluetun sh
@@ -508,7 +504,7 @@ docker exec -it gluetun sh
 
 ## 🐧 Linux
 
-```bash id="debug_linux"
+```bash
 docker logs gluetun
 docker ps
 docker exec -it gluetun sh
