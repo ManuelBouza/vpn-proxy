@@ -26,7 +26,7 @@ Aquí encontrarás todo lo necesario para:
 
 * Ejecutar una VPN WireGuard dentro de Docker
 * Exponer un proxy HTTP en `127.0.0.1:8888`
-* Configurar un navegador (ej. Firefox o Edge/Chrome con extensión) para usar ese proxy
+* Configurar un navegador (por ejemplo, **Edge / Chrome / Brave / Firefox**) para usar ese proxy
 * Aislar el tráfico del navegador del resto del sistema
 
 ---
@@ -34,7 +34,7 @@ Aquí encontrarás todo lo necesario para:
 # 🧱 Arquitectura
 
 ```text
-Navegador (Firefox / Edge / Chrome)
+Navegador (Edge / Chrome / Brave / Firefox)
         ↓
 Proxy HTTP (127.0.0.1:8888)
         ↓
@@ -167,7 +167,7 @@ TZ=Europe/Madrid
 * Nunca subas `.env` a GitHub
 * Añádelo a `.gitignore`
 * Trata este archivo como **secreto** (contiene claves privadas)
-* Validar que los datos de WireGuard sean correctos
+* Valida que los datos de WireGuard sean correctos
 
 ---
 
@@ -313,9 +313,68 @@ curl -x http://127.0.0.1:8888 https://ifconfig.me
 
 # 🌐 8. Navegador
 
-## 🥇 Firefox (recomendado)
+## 🥇 Edge / Chrome / Brave
 
-Permite configurar proxy de forma independiente sin afectar el sistema.
+Para navegadores basados en Chromium se recomienda usar **Proxy SwitchyOmega 3 (ZeroOmega)**:
+
+[Proxy SwitchyOmega 3 (ZeroOmega)](https://microsoftedge.microsoft.com/addons/detail/proxy-switchyomega-3-zer/dmaldhchmoafliphkijbfhaomcgglmgd)
+
+### Configuración inicial recomendada
+
+1. Configurar el perfil `proxy` con estos valores:
+
+* **Scheme**: `(default)`
+* **Protocol**: `HTTP`
+* **Server**: `127.0.0.1`
+* **Port**: `8888`
+
+Y deja el resto así:
+
+* `http://` → `(use default)`
+
+* `https://` → `(use default)`
+
+* `ftp://` → `(use default)`
+
+* **Bypass List**:
+
+```text
+127.0.0.1
+::1
+localhost
+```
+
+---
+
+### Ajustes obligatorios para que cargue siempre por el proxy
+
+En la sección **Interface**:
+
+1. Cambia el **Startup Profile** a `proxy`
+2. Pulsa **Apply changes**
+3. Reinicia el navegador
+
+> ⚠️ Importante:
+> No configures manualmente `https://` como proxy.
+> Gluetun utiliza un proxy HTTP con soporte CONNECT para HTTPS.
+
+---
+
+### Verificación
+
+Abre:
+
+```text
+https://ifconfig.me
+```
+
+👉 Debe mostrar la IP de la VPN (no la IP local)
+
+---
+
+## 🥈 Firefox (segunda opción recomendada)
+
+Firefox permite configurar proxy de forma independiente sin afectar el sistema.
 
 Configuración:
 
@@ -325,44 +384,13 @@ Configuración:
 
 ---
 
-## 🥈 Chrome / Edge / Brave
-
-Usar extensión: **FoxyProxy Standard**
-
-Configuración recomendada:
-
-* Tipo: HTTP
-* Host: `127.0.0.1`
-* Puerto: `8888`
-
-👉 Activar manualmente el perfil desde la extensión.
-
----
-
-## 🧪 Verificación
-
-Abrir:
-
-```text
-https://ifconfig.me
-```
-
-👉 Debe mostrar la IP de la VPN
-
----
-
 ## 💡 Nota importante
 
 Los navegadores basados en Chromium (Chrome, Edge, Brave):
 
-* Usan el proxy del sistema por defecto
-* No permiten aislamiento sin extensiones
-
-👉 Por eso se recomienda:
-
-* Firefox (nativo)
-  **o**
-* FoxyProxy (alternativa en Chromium)
+* No aíslan el tráfico por sí solos como Firefox
+* Requieren una extensión o configuración explícita de proxy
+* Para este proyecto, **ZeroOmega** es la opción recomendada
 
 ---
 
@@ -422,8 +450,10 @@ Solución:
 
 Verificar:
 
-* Firefox → configuración manual activa
-* FoxyProxy → perfil seleccionado
+* ZeroOmega → perfil `proxy` activo
+* `Startup Profile = proxy`
+* `Apply changes` ejecutado
+* El navegador fue reiniciado
 
 👉 Si no está activo, el tráfico saldrá por la IP local.
 
@@ -509,4 +539,3 @@ docker logs gluetun
 docker ps
 docker exec -it gluetun sh
 ```
----
