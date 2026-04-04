@@ -394,6 +394,35 @@ Los navegadores basados en Chromium (Chrome, Edge, Brave):
 
 ---
 
+# ⚠️ Limitaciones conocidas
+
+## ❗ Sincronización de navegadores Chromium (Edge, Chrome, Brave)
+
+En navegadores basados en Chromium, la sincronización de la cuenta (login y sync) **puede no pasar completamente por el proxy configurado mediante extensión**.
+
+Esto ocurre porque:
+
+* Parte del tráfico de autenticación y sincronización se gestiona a nivel interno del navegador
+* Algunos servicios pueden ignorar la configuración de proxy de la extensión
+* El tráfico puede salir directamente por la red del sistema
+
+### Consecuencia
+
+👉 La sincronización puede fallar o utilizar la IP local en lugar de la IP de la VPN
+
+### Recomendaciones
+
+* Usar configuración de proxy global (no por reglas/patrones)
+* Evitar listas de exclusión (bypass)
+* Reiniciar el navegador tras aplicar cambios
+
+### Alternativas
+
+* Usar Firefox (mejor soporte de proxy a nivel navegador)
+* Usar una VPN a nivel sistema si la sincronización es crítica
+
+---
+
 # ⚠️ Problemas comunes
 
 ## ❌ Proxy devuelve 503
